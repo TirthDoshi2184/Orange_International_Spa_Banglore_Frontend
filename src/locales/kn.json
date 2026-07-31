@@ -1,0 +1,66 @@
+{
+  "nav": { "home": "ಮುಖಪುಟ", "cart": "ಕಾರ್ಟ್" },
+  "catalogue": { "title": "ನಮ್ಮ ಸೇವೆಗಳು", "from": "ಇಂದ" },
+  "serviceDetail": {
+    "benefits": "ಪ್ರಯೋಜನಗಳು",
+    "instructions": "ಸೂಚನೆಗಳು",
+    "selectDuration": "ಅವಧಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "addToCart": "ಕಾರ್ಟ್‌ಗೆ ಸೇರಿಸಿ",
+    "noDurations": "ಈ ಸೇವೆಗೆ ಪ್ರಸ್ತುತ ಯಾವುದೇ ಅವಧಿಗಳು ಲಭ್ಯವಿಲ್ಲ."
+  },
+  "cart": {
+    "title": "ನಿಮ್ಮ ಕಾರ್ಟ್",
+    "empty": "ನಿಮ್ಮ ಕಾರ್ಟ್ ಖಾಲಿಯಾಗಿದೆ.",
+    "browse": "ಸೇವೆಗಳನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ →",
+    "services": "ಸೇವೆಗಳು",
+    "addMocktails": "ಮಾಕ್‌ಟೈಲ್‌ಗಳನ್ನು ಸೇರಿಸಿ",
+    "timeSlot": "ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ",
+    "coupon": "ಕೂಪನ್ ಕೋಡ್",
+    "couponPlaceholder": "ಕೂಪನ್ ಕೋಡ್ ನಮೂದಿಸಿ",
+    "apply": "ಅನ್ವಯಿಸಿ",
+    "subtotal": "ಉಪಮೊತ್ತ",
+    "discount": "ರಿಯಾಯಿತಿ",
+    "gst": "ಜಿಎಸ್‌ಟಿ",
+    "grandTotal": "ಒಟ್ಟು ಮೊತ್ತ",
+    "selectSlotFirst": "ಮುಂದುವರಿಯಲು ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆಮಾಡಿ",
+    "proceed": "ಚೆಕ್‌ಔಟ್‌ಗೆ ಮುಂದುವರಿಯಿರಿ",
+    "remove": "ತೆಗೆದುಹಾಕಿ",
+    "calculating": "ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ..."
+  },
+  "checkout": {
+    "title": "ಚೆಕ್‌ಔಟ್",
+    "timeSlotLabel": "ಸಮಯ ಸ್ಲಾಟ್",
+    "fullName": "ಪೂರ್ಣ ಹೆಸರು",
+    "mobile": "ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
+    "email": "ಇಮೇಲ್",
+    "gender": "ಲಿಂಗ",
+    "preferNotToSay": "ಹೇಳಲು ಇಚ್ಛಿಸುವುದಿಲ್ಲ",
+    "male": "ಪುರುಷ",
+    "female": "ಮಹಿಳೆ",
+    "other": "ಇತರೆ",
+    "specialInstructions": "ವಿಶೇಷ ಸೂಚನೆಗಳು",
+    "placeBooking": "ಬುಕಿಂಗ್ ಮಾಡಿ",
+    "placing": "ಬುಕಿಂಗ್ ಮಾಡಲಾಗುತ್ತಿದೆ..."
+  },
+  "confirmation": {
+    "title": "ಬುಕಿಂಗ್ ಮಾಡಲಾಗಿದೆ",
+    "bookingNumber": "ಬುಕಿಂಗ್ ಸಂಖ್ಯೆ",
+    "queueNumber": "ಕ್ಯೂ ಸಂಖ್ಯೆ",
+    "timeSlot": "ಸಮಯ ಸ್ಲಾಟ್",
+    "paymentStatus": "ಪಾವತಿ ಸ್ಥಿತಿ",
+    "bookingStatus": "ಬುಕಿಂಗ್ ಸ್ಥಿತಿ",
+    "paid": "ಪಾವತಿಸಲಾಗಿದೆ",
+    "outstanding": "ಬಾಕಿ",
+    "payButton": "₹{{amount}} Razorpay ಮೂಲಕ ಪಾವತಿಸಿ",
+    "backToServices": "← ಸೇವೆಗಳಿಗೆ ಹಿಂತಿರುಗಿ"
+  },
+  "addon": {
+    "title": "ನಿಮ್ಮ ಆರ್ಡರ್‌ಗೆ ಸೇರಿಸಿ",
+    "addServices": "ಸೇವೆಗಳನ್ನು ಸೇರಿಸಿ",
+    "addMocktails": "ಮಾಕ್‌ಟೈಲ್‌ಗಳನ್ನು ಸೇರಿಸಿ",
+    "addAndPay": "ಸೇರಿಸಿ ಮತ್ತು ಈಗ ಪಾವತಿಸಿ",
+    "openingPayment": "ಪಾವತಿ ತೆರೆಯಲಾಗುತ್ತಿದೆ...",
+    "note": "ಪಾವತಿ ತಕ್ಷಣ ಅಗತ್ಯವಿದೆ — ಪಾವತಿ ಯಶಸ್ವಿಯಾದ ನಂತರವೇ ವಸ್ತುಗಳನ್ನು ನಿಮ್ಮ ಆರ್ಡರ್‌ಗೆ ಸೇರಿಸಲಾಗುತ್ತದೆ."
+  },
+  "language": { "english": "English", "kannada": "ಕನ್ನಡ" }
+}

@@ -1,0 +1,66 @@
+{
+  "nav": { "home": "Home", "cart": "Cart" },
+  "catalogue": { "title": "Our Services", "from": "From" },
+  "serviceDetail": {
+    "benefits": "Benefits",
+    "instructions": "Instructions",
+    "selectDuration": "Select Duration",
+    "addToCart": "Add to Cart",
+    "noDurations": "No durations currently available for this service."
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty.",
+    "browse": "Browse services →",
+    "services": "Services",
+    "addMocktails": "Add Mocktails",
+    "timeSlot": "Select a Time Slot",
+    "coupon": "Coupon Code",
+    "couponPlaceholder": "Enter coupon code",
+    "apply": "Apply",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "gst": "GST",
+    "grandTotal": "Grand Total",
+    "selectSlotFirst": "Select a time slot to continue",
+    "proceed": "Proceed to Checkout",
+    "remove": "Remove",
+    "calculating": "Calculating..."
+  },
+  "checkout": {
+    "title": "Checkout",
+    "timeSlotLabel": "Time slot",
+    "fullName": "Full Name",
+    "mobile": "Mobile Number",
+    "email": "Email",
+    "gender": "Gender",
+    "preferNotToSay": "Prefer not to say",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "specialInstructions": "Special Instructions",
+    "placeBooking": "Place Booking",
+    "placing": "Placing booking..."
+  },
+  "confirmation": {
+    "title": "Booking Placed",
+    "bookingNumber": "Booking Number",
+    "queueNumber": "Queue Number",
+    "timeSlot": "Time Slot",
+    "paymentStatus": "Payment Status",
+    "bookingStatus": "Booking Status",
+    "paid": "Paid",
+    "outstanding": "Outstanding",
+    "payButton": "Pay ₹{{amount}} with Razorpay",
+    "backToServices": "← Back to services"
+  },
+  "addon": {
+    "title": "Add to Your Order",
+    "addServices": "Add Services",
+    "addMocktails": "Add Mocktails",
+    "addAndPay": "Add & Pay Now",
+    "openingPayment": "Opening payment...",
+    "note": "Payment is required immediately — items are added to your order only after payment succeeds."
+  },
+  "language": { "english": "English", "kannada": "ಕನ್ನಡ" }
+}

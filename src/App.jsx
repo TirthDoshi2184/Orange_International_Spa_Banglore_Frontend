@@ -21,17 +21,20 @@ import CouponsManager from "./pages/admin/CouponsManager";
 import Reports from "./pages/admin/Reports";
 import InvoiceView from "./pages/admin/InvoiceView";
 
+import CustomerLayout from "./components/customer/CustomerLayout";
+import LiveOrders from "./pages/admin/LiveOrder";
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Routes>
-        <Route path="/" element={<ServiceCatalogue />} />
-        <Route path="/services/:id" element={<ServiceDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/booking/:id" element={<BookingConfirmation />} />
-        <Route path="/addon/:roomId" element={<AddOnOrder />} />
-
+ <Routes>, 
+<Route element={<CustomerLayout />}>
+  <Route path="/" element={<ServiceCatalogue />} />
+  <Route path="/services/:id" element={<ServiceDetail />} />
+  <Route path="/cart" element={<Cart />} />
+  <Route path="/checkout" element={<Checkout />} />
+  <Route path="/booking/:id" element={<BookingConfirmation />} />
+  <Route path="/addon/:roomId" element={<AddOnOrder />} />
+</Route>
         <Route path="/admin/login" element={<AdminLogin />} />
 // App.jsx — add inside the nested /admin route
 
@@ -55,6 +58,7 @@ const App = () => {
 <Route path="coupons" element={<CouponsManager />} />
 <Route path="reports" element={<Reports />} />
 <Route path="bookings/:id/invoice" element={<InvoiceView />} />
+<Route path="orders" element={<LiveOrders />} />
         </Route>
       </Routes>
     </div>

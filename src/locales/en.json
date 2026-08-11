@@ -25,8 +25,11 @@
     "selectSlotFirst": "Select a time slot to continue",
     "proceed": "Proceed to Checkout",
     "remove": "Remove",
-    "calculating": "Calculating..."
-  },
+    "calculating": "Calculating...",
+    "add" :"Add" ,
+    "addFromMenu": "Add from Menu",
+    "left": "Left"
+   },
   "checkout": {
     "title": "Checkout",
     "timeSlotLabel": "Time slot",
@@ -40,7 +43,8 @@
     "other": "Other",
     "specialInstructions": "Special Instructions",
     "placeBooking": "Place Booking",
-    "placing": "Placing booking..."
+    "placing": "Placing booking...",
+     "validationError": "Name and mobile number are required."
   },
   "confirmation": {
     "title": "Booking Placed",
@@ -52,15 +56,29 @@
     "paid": "Paid",
     "outstanding": "Outstanding",
     "payButton": "Pay ₹{{amount}} with Razorpay",
-    "backToServices": "← Back to services"
+    "backToServices": "← Back to services",
+    "paymentHistory": "Payment History",
+  "processing": "Processing...",
+  "subtotal": "Subtotal",
+  "discount": "Discount",
+  "gst": "GST",
+  "grandTotal": "Grand Total"
   },
   "addon": {
-    "title": "Add to Your Order",
-    "addServices": "Add Services",
-    "addMocktails": "Add Mocktails",
-    "addAndPay": "Add & Pay Now",
-    "openingPayment": "Opening payment...",
-    "note": "Payment is required immediately — items are added to your order only after payment succeeds."
-  },
+  "title": "Add to Your Order",
+  "loading": "Finding your order...",
+  "bookingLabel": "Booking",
+  "roomLabel": "Room",
+  "paidSoFar": "Paid so far",
+  "addServices": "Add Services",
+  "addFromMenu": "Add from Menu",
+  "addAndPay": "Add & Pay Now",
+  "addAndPayAmount": "Add & Pay ₹{{amount}}",
+  "openingPayment": "Opening payment...",
+  "note": "Payment is required immediately — items are added to your order only after payment succeeds.",
+  "serviceFallback": "Service",
+  "menuItemFallback": "Menu Item",
+  "minSuffix": "min"
+},
   "language": { "english": "English", "kannada": "ಕನ್ನಡ" }
 }

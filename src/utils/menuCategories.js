@@ -19,6 +19,27 @@ export const MENU_CATEGORIES = [
   "Cold Coffee",
 ];
 
+// Display-only translations for category labels. Grouping/filtering always
+// uses the English MENU_CATEGORIES value above — never these.
+export const MENU_CATEGORY_LABELS_KN = {
+  "Fresh Juice": "ತಾಜಾ ಜ್ಯೂಸ್",
+  "Boba Mojitos": "ಬೋಬಾ ಮೊಜಿಟೊ",
+  "Crushed Ice Lemonade": "ಕ್ರಶ್ಡ್ ಐಸ್ ಲೆಮನೇಡ್",
+  "Thick Shakes": "ಥಿಕ್ ಶೇಕ್",
+  "Elite Special Juices": "ಎಲೈಟ್ ಸ್ಪೆಷಲ್ ಜ್ಯೂಸ್",
+  "Fries": "ಫ್ರೈಸ್",
+  "Burger": "ಬರ್ಗರ್",
+  "Sandwich": "ಸ್ಯಾಂಡ್‌ವಿಚ್",
+  "Gym Freaks": "ಜಿಮ್ ಫ್ರೀಕ್ಸ್",
+  "Lassi": "ಲಸ್ಸಿ",
+  "Falooda": "ಫಲೂದಾ",
+  "Kulfi": "ಕುಲ್ಫಿ",
+  "Ice Cream Sundaes": "ಐಸ್ ಕ್ರೀಂ ಸಂಡೇ",
+  "Nutella & Hazelnut": "ನುಟೆಲ್ಲಾ & ಹೇಜಲ್‌ನಟ್",
+  "Chocolate Based Shakes": "ಚಾಕಲೇಟ್ ಶೇಕ್",
+  "Cold Coffee": "ಕೋಲ್ಡ್ ಕಾಫಿ",
+};
+
 // Groups a flat array of menu items ({ category, ... }) into
 // [{ category, items: [...] }, ...] ordered by MENU_CATEGORIES.
 // Categories with zero items are skipped so empty tabs never show.

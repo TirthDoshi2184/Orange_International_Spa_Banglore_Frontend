@@ -63,3 +63,13 @@ export const getPopularServicesReport = (days = 30) =>
 
 export const getPeakHoursReport = (days = 30) =>
   api.get("/admin/reports/peak-hours", { params: { days } }).then((res) => res.data.data);
+
+// Add-on Orders
+export const getAddonOrders = (status) =>
+  api.get("/admin/addon-orders", { params: status ? { status } : {} }).then((res) => res.data.data);
+
+export const updateAddonOrderStatus = (id, status) =>
+  api.patch(`/admin/addon-orders/${id}/status`, { status }).then((res) => res.data.data);
+
+export const triggerDayEndCleanup = () =>
+  api.post("/admin/day-end-cleanup").then((res) => res.data.data);

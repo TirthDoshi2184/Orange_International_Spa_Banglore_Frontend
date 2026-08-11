@@ -1,9 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useNewOrdersCount } from "../../hooks/useNewOrdersCount";
+import { getAddonOrders } from "../../api/admin.api"; // adjust name/path if different
 
-// AdminLayout.jsx — extend navItems
 const navItems = [
   { to: "/admin/dashboard", label: "Dashboard" },
+  { to: "/admin/orders", label: "Live Orders", showBadge: true },
   { to: "/admin/bookings", label: "Bookings" },
   { to: "/admin/services", label: "Services" },
   { to: "/admin/mocktails", label: "Menu" },
@@ -14,8 +16,10 @@ const navItems = [
   { to: "/admin/coupons", label: "Coupons" },
   { to: "/admin/reports", label: "Reports" },
 ];
+
 const AdminLayout = () => {
   const { logout } = useAuth();
+  const { newCount, markAllSeen, latestOrderId } = useNewOrdersCount(getAddonOrders);
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -28,13 +32,19 @@ const AdminLayout = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => item.showBadge && markAllSeen(latestOrderId)}
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-md text-sm ${
+                `flex items-center justify-between px-3 py-2 rounded-md text-sm ${
                   isActive ? "bg-orange-500 text-white" : "text-gray-300 hover:bg-gray-800"
                 }`
               }
             >
-              {item.label}
+              <span>{item.label}</span>
+              {item.showBadge && newCount > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center bg-red-500 text-white text-xs font-semibold rounded-full h-5 min-w-[20px] px-1">
+                  {newCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

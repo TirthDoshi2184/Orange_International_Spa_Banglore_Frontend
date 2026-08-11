@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getDashboardStats } from "../../api/admin.api";
+import { getDashboardStats,triggerDayEndCleanup } from "../../api/admin.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
@@ -16,6 +16,22 @@ const DashboardHome = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [cleanupRunning, setCleanupRunning] = useState(false);
+const [cleanupResult, setCleanupResult] = useState(null);
+
+const handleRunCleanup = async () => {
+  setCleanupRunning(true);
+  try {
+    const result = await triggerDayEndCleanup();
+    setCleanupResult(result);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setCleanupRunning(false);
+  }
+};
+
+
   useEffect(() => {
     getDashboardStats()
       .then(setStats)
@@ -29,8 +45,22 @@ const DashboardHome = () => {
 
   return (
     <div className="px-6 py-6">
-      <h1 className="text-xl font-semibold mb-6">Today's Overview</h1>
-
+<div className="flex items-center justify-between mb-2">
+  <h1 className="text-xl font-semibold">Today's Overview</h1>
+  <button
+    onClick={handleRunCleanup}
+    disabled={cleanupRunning}
+    className="text-xs border border-gray-300 px-3 py-1.5 rounded-md disabled:opacity-50"
+  >
+    {cleanupRunning ? "Running..." : "Run Day-End Cleanup Now"}
+  </button>
+</div>
+{cleanupResult && (
+  <p className="text-xs text-gray-500 mb-6">
+    Completed: {cleanupResult.completed} · Cancelled (no-show): {cleanupResult.cancelled} · Still unpaid (left in-service): {cleanupResult.stillUnpaid}
+  </p>
+)}
+{!cleanupResult && <div className="mb-6" />}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard label="Today's Bookings" value={stats.todaysBookings} />
         <StatCard label="Today's Revenue" value={<PriceTag amount={stats.todaysRevenue} />} accent="text-green-600" />

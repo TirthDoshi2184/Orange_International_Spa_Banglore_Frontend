@@ -4,6 +4,7 @@ import { getBookingById, confirmPayment } from "../../api/bookings.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
+import { useTranslation } from "react-i18next";
 
 import { launchRazorpayCheckout } from "../../utils/razorpayCheckout";
 const BookingConfirmation = () => {
@@ -12,6 +13,8 @@ const BookingConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [confirming, setConfirming] = useState(false);
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     getBookingById(id)
@@ -52,29 +55,29 @@ const handlePayOutstanding = async () => {
     <div className="max-w-md mx-auto px-4 py-10">
       <div className="text-center mb-8">
         <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">✓</div>
-        <h1 className="text-2xl font-semibold">Booking Placed</h1>
+        <h1 className="text-2xl font-semibold">{t("confirmation.title")}</h1>
         <p className="text-gray-500 text-sm mt-1 capitalize">{booking.paymentStatus}</p>
       </div>
 
       <div className="border border-gray-200 rounded-xl p-5 space-y-3 mb-6">
-        <Row label="Booking Number" value={booking.bookingNumber} />
-        <Row label="Queue Number" value={`#${booking.queueNumber}`} />
-        <Row label="Time Slot" value={booking.timeSlot?.time || "—"} />
-        <Row label="Payment Status" value={<span className={`font-medium capitalize ${statusColor[booking.paymentStatus]}`}>{booking.paymentStatus}</span>} />
-        <Row label="Booking Status" value={booking.bookingStatus} />
+        <Row label={t("confirmation.bookingNumber")} value={booking.bookingNumber} />
+        <Row label={t("confirmation.queueNumber")} value={`#${booking.queueNumber}`} />
+        <Row label={t("confirmation.timeSlot")} value={booking.timeSlot?.time || "—"} />
+        <Row label={t("confirmation.paymentStatus")} value={<span className={`font-medium capitalize ${statusColor[booking.paymentStatus]}`}>{booking.paymentStatus}</span>} />
+        <Row label={t("confirmation.bookingStatus")} value={booking.bookingStatus} />
         <div className="border-t border-gray-100 pt-3 mt-1">
-          <Row label="Subtotal" value={<PriceTag amount={booking.subtotal} />} />
-          {booking.discount > 0 && <Row label="Discount" value={`−₹${booking.discount}`} />}
-          <Row label="GST" value={<PriceTag amount={booking.gst} />} />
-          <Row label={<span className="font-semibold">Grand Total</span>} value={<PriceTag amount={booking.grandTotal} className="font-semibold" />} />
-          <Row label="Paid" value={<PriceTag amount={totalPaid} />} />
-          <Row label="Outstanding" value={<PriceTag amount={outstanding} className={outstanding > 0 ? "text-amber-600" : "text-green-600"} />} />
+          <Row label={t("confirmation.subtotal")} value={<PriceTag amount={booking.subtotal} />} />
+          {booking.discount > 0 && <Row label={t("confirmation.discount")} value={`−₹${booking.discount}`} />}
+          <Row label={t("confirmation.gst")} value={<PriceTag amount={booking.gst} />} />
+          <Row label={<span className="font-semibold">{t("confirmation.grandTotal")}</span>} value={<PriceTag amount={booking.grandTotal} className="font-semibold" />} />
+          <Row label={t("confirmation.paid")} value={<PriceTag amount={totalPaid} />} />
+          <Row label={t("confirmation.outstanding")} value={<PriceTag amount={outstanding} className={outstanding > 0 ? "text-amber-600" : "text-green-600"} />} />
         </div>
       </div>
 
       {booking.paymentHistory?.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Payment History</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">{t("confirmation.paymentHistory")}</h3>
           <div className="space-y-1 text-sm text-gray-600">
             {booking.paymentHistory.map((p, i) => (
               <div key={i} className="flex justify-between">
@@ -91,12 +94,12 @@ const handlePayOutstanding = async () => {
       {outstanding > 0 && (
         <div className="mb-4">
           <button onClick={handlePayOutstanding} disabled={confirming} className="...">
-  {confirming ? "Processing..." : `Pay ₹${outstanding} with Razorpay`}
-</button>
+  {confirming ? t("confirmation.processing") : t("confirmation.payButton", { amount: outstanding })}
+      </button>
         </div>
       )}
 
-      <Link to="/" className="block text-center text-orange-600 font-medium">← Back to services</Link>
+      <Link to="/" className="block text-center text-orange-600 font-medium">← {t("confirmation.backToServices")}</Link>
     </div>
   );
 };

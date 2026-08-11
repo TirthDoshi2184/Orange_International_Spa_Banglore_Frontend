@@ -3,12 +3,16 @@ import { getAvailableSlots } from "../../api/timeslots.api";
 import { useCart } from "../../context/CartContext";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
+import { useTranslation } from "react-i18next";
+
 
 const TimeSlotSelector = () => {
   const { cart, setTimeSlot } = useCart();
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     getAvailableSlots()
@@ -17,20 +21,20 @@ const TimeSlotSelector = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Loader label="Loading time slots..." />;
+  if (loading) return <Loader label={t("cart.loadingSlots")} />;
   if (error) return <ErrorMessage message={error} />;
 
   if (slots.length === 0) {
     return (
       <p className="text-sm text-gray-500 py-4">
-        No time slots available right now. Please check back shortly.
+        {t("cart.noSlots")}
       </p>
     );
   }
 
   return (
     <div>
-      <h3 className="font-medium text-gray-900 mb-3">Select a Time Slot</h3>
+      <h3 className="font-medium text-gray-900 mb-3">{t("cart.timeSlot")}</h3>
       <div className="flex flex-wrap gap-3">
         {slots.map((slot) => {
           const remaining = slot.maxCapacity - slot.booked;
@@ -53,7 +57,7 @@ const TimeSlotSelector = () => {
             >
               <div className="font-medium">{slot.time}</div>
               <div className="text-xs">
-                {isFull ? "Full" : `${remaining} left`}
+                {isFull ? t("cart.full") : t("cart.left", { count: remaining })}
               </div>
             </button>
           );

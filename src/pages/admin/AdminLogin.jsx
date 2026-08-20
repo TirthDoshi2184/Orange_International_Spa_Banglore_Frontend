@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { loginAdmin } from "../../api/auth.api";
 import { useAuth } from "../../context/AuthContext";
 import ErrorMessage from "../../components/shared/ErrorMessage";
+import logoMark from "../../assets/logo-mark.png";
 
 const AdminLogin = () => {
   const { login } = useAuth();
@@ -27,34 +28,44 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="max-w-sm mx-auto px-4 py-16">
-      <h1 className="text-xl font-semibold mb-6">Admin Login</h1>
-      <ErrorMessage message={error} />
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          required
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-gray-900 text-white font-medium py-2.5 rounded-lg disabled:opacity-50"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+    <div className="min-h-screen bg-sand-50 font-sans flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-6">
+          <img src={logoMark} alt="Orange International Spa" className="w-14 h-14 rounded-full object-cover border border-gold-500 mb-3" />
+          <p className="font-display uppercase tracking-wide text-ink-900 text-sm">Orange International Spa</p>
+          <p className="text-[10px] uppercase tracking-widest text-ink-600/60 mt-0.5">Admin</p>
+        </div>
+
+        <div className="bg-white border border-sand-200 rounded-2xl px-6 py-7 shadow-[0_10px_26px_rgba(60,40,20,0.08)]">
+          <h1 className="font-display font-semibold text-xl text-ink-900 mb-5 text-center">Admin Login</h1>
+          <ErrorMessage message={error} />
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="w-full border border-sand-200 rounded-lg px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-600/40 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="w-full border border-sand-200 rounded-lg px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-600/40 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15"
+              required
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-espresso-950 text-gold-300 font-semibold py-2.5 rounded-lg disabled:opacity-50 hover:bg-espresso-800 transition-colors"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

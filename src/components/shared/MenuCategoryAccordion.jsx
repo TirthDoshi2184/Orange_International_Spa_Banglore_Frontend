@@ -13,11 +13,11 @@ const MenuCategoryAccordion = ({ items, renderItem, defaultOpenFirst = true, gri
         <details
           key={group.category}
           open={defaultOpenFirst && i === 0}
-          className="border border-gray-200 rounded-lg overflow-hidden"
+          className="border border-parchment-200 rounded-xl overflow-hidden bg-white [&_summary::-webkit-details-marker]:hidden"
         >
-          <summary className="cursor-pointer select-none px-4 py-2.5 bg-gray-50 text-sm font-medium text-gray-800 flex items-center justify-between">
+          <summary className="cursor-pointer select-none px-4 py-3 bg-parchment-50 text-sm font-semibold text-ink-900 font-sans flex items-center justify-between">
             <span>{language === "kn" ? MENU_CATEGORY_LABELS_KN[group.category] || group.category : group.category}</span>
-            <span className="text-xs text-gray-400 font-normal">{group.items.length} items</span>
+            <span className="text-xs text-gold-600 font-medium">{group.items.length} items</span>
           </summary>
           <div className={`p-3 ${gridClassName}`}>
             {group.items.map((item) => renderItem(item))}

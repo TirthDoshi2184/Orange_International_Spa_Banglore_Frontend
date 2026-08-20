@@ -3,6 +3,9 @@ import { getAllCoupons, createCoupon, getAllCustomers } from "../../api/admin.ap
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 
+const inputClass =
+  "w-full border border-sand-200 rounded-lg px-3 py-2 text-sm text-ink-900 placeholder:text-ink-600/40 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15";
+
 const CouponsManager = () => {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,17 +64,17 @@ const CouponsManager = () => {
   };
 
   return (
-    <div className="px-6 py-6 max-w-3xl">
-      <h1 className="text-xl font-semibold mb-6">Coupons</h1>
+    <div className="px-7 py-7 max-w-3xl bg-sand-50 min-h-screen font-sans">
+      <h1 className="font-display font-semibold text-2xl text-ink-900 mb-6">Coupons</h1>
 
-      <form onSubmit={handleCreate} className="border border-gray-200 rounded-xl p-4 mb-8">
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Issue a New Coupon</h3>
+      <form onSubmit={handleCreate} className="bg-white border border-sand-200 rounded-2xl p-5 mb-8">
+        <h3 className="font-display font-semibold text-sm text-ink-900 mb-3">Issue a New Coupon</h3>
         <ErrorMessage message={createError} />
 
         {selectedCustomer ? (
-          <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 mb-3 text-sm">
-            <span>{selectedCustomer.name} · {selectedCustomer.mobileNumber}</span>
-            <button type="button" onClick={() => setSelectedCustomer(null)} className="text-xs text-gray-500">
+          <div className="flex items-center justify-between bg-gold-500/10 border border-gold-500/30 rounded-lg px-3 py-2 mb-3 text-sm">
+            <span className="text-ink-900">{selectedCustomer.name} · {selectedCustomer.mobileNumber}</span>
+            <button type="button" onClick={() => setSelectedCustomer(null)} className="text-xs text-ink-600 hover:text-ink-900">
               Change
             </button>
           </div>
@@ -81,10 +84,10 @@ const CouponsManager = () => {
               placeholder="Search customer by name or mobile"
               value={customerSearch}
               onChange={(e) => setCustomerSearch(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className={inputClass}
             />
             {customerResults.length > 0 && (
-              <div className="border border-gray-200 rounded-lg mt-1 max-h-40 overflow-y-auto">
+              <div className="border border-sand-200 rounded-lg mt-1 max-h-40 overflow-y-auto bg-white">
                 {customerResults.map((c) => (
                   <button
                     type="button"
@@ -93,7 +96,7 @@ const CouponsManager = () => {
                       setSelectedCustomer(c);
                       setCustomerResults([]);
                     }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                    className="w-full text-left px-3 py-2 text-sm text-ink-900 hover:bg-sand-50 border-b border-sand-100 last:border-0"
                   >
                     {c.name} · {c.mobileNumber}
                   </button>
@@ -105,24 +108,24 @@ const CouponsManager = () => {
 
         <div className="flex gap-3 mb-3">
           <div className="flex-1">
-            <label className="text-xs text-gray-500 block mb-1">Discount %</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1">Discount %</label>
             <input
               type="number"
               min="1"
               max="100"
               value={discountPercent}
               onChange={(e) => setDiscountPercent(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-gray-500 block mb-1">Expires in (days)</label>
+            <label className="text-xs font-medium text-ink-600 block mb-1">Expires in (days)</label>
             <input
               type="number"
               min="1"
               value={expiryDays}
               onChange={(e) => setExpiryDays(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         </div>
@@ -130,50 +133,50 @@ const CouponsManager = () => {
         <button
           type="submit"
           disabled={saving || !selectedCustomer}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+          className="bg-gold-500 text-espresso-950 font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-gold-400"
         >
           {saving ? "Issuing..." : "Issue Coupon"}
         </button>
       </form>
 
-      <h3 className="text-sm font-medium text-gray-700 mb-3">All Coupons</h3>
+      <h3 className="font-display font-semibold text-sm text-ink-900 mb-3">All Coupons</h3>
       {loading ? (
   <Loader label="Loading coupons..." />
 ) : error ? (
   <ErrorMessage message={error} />
 ) : (
-  <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+  <div className="bg-white border border-sand-200 rounded-2xl overflow-hidden">
     <table className="w-full text-sm">
-      <thead className="bg-gray-50 text-left text-xs text-gray-500 uppercase">
+      <thead className="bg-sand-50 text-left text-[11px] text-ink-600 uppercase tracking-wide">
         <tr>
-          <th className="px-4 py-3">Code</th>
-          <th className="px-4 py-3">Customer</th>
-          <th className="px-4 py-3">Discount</th>
-          <th className="px-4 py-3">Expiry</th>
-          <th className="px-4 py-3">Status</th>
+          <th className="px-4 py-3 font-semibold">Code</th>
+          <th className="px-4 py-3 font-semibold">Customer</th>
+          <th className="px-4 py-3 font-semibold">Discount</th>
+          <th className="px-4 py-3 font-semibold">Expiry</th>
+          <th className="px-4 py-3 font-semibold">Status</th>
         </tr>
       </thead>
       <tbody>
         {coupons.length === 0 && (
-          <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">No coupons yet.</td></tr>
+          <tr><td colSpan={5} className="px-4 py-6 text-center text-ink-600/60">No coupons yet.</td></tr>
         )}
         {coupons.map((c) => {
           const expired = new Date(c.expiryDate) < new Date();
           return (
-            <tr key={c._id} className="border-t border-gray-100">
-              <td className="px-4 py-3 font-mono">{c.code}</td>
-              <td className="px-4 py-3">
-                {c.customerId?.name} <span className="text-xs text-gray-400">({c.customerId?.mobileNumber})</span>
+            <tr key={c._id} className="border-t border-sand-100 hover:bg-sand-50/60">
+              <td className="px-4 py-3 font-mono text-ink-900">{c.code}</td>
+              <td className="px-4 py-3 text-ink-900">
+                {c.customerId?.name} <span className="text-xs text-ink-600/60">({c.customerId?.mobileNumber})</span>
               </td>
-              <td className="px-4 py-3">{c.discountPercent}%</td>
-              <td className="px-4 py-3 text-gray-500">{new Date(c.expiryDate).toLocaleDateString()}</td>
+              <td className="px-4 py-3 text-ink-900">{c.discountPercent}%</td>
+              <td className="px-4 py-3 text-ink-600">{new Date(c.expiryDate).toLocaleDateString()}</td>
               <td className="px-4 py-3">
                 {c.isUsed ? (
-                  <span className="text-gray-400 text-xs">Used</span>
+                  <span className="text-ink-600/50 text-xs">Used</span>
                 ) : expired ? (
-                  <span className="text-red-500 text-xs">Expired</span>
+                  <span className="text-red-600 text-xs font-medium">Expired</span>
                 ) : (
-                  <span className="text-green-600 text-xs font-medium">Available</span>
+                  <span className="text-emerald-600 text-xs font-medium">Available</span>
                 )}
               </td>
             </tr>

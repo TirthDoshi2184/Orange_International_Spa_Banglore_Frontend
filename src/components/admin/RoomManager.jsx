@@ -57,8 +57,8 @@ const RoomsManager = () => {
   if (loading) return <Loader label="Loading rooms..." />;
 
   return (
-    <div className="px-6 py-6 max-w-lg">
-      <h1 className="text-xl font-semibold mb-6">Rooms</h1>
+    <div className="px-7 py-7 max-w-lg bg-sand-50 min-h-screen font-sans">
+      <h1 className="font-display font-semibold text-2xl text-ink-900 mb-6">Rooms</h1>
       <ErrorMessage message={error} />
 
       <form onSubmit={handleCreate} className="flex gap-2 mb-6">
@@ -66,12 +66,12 @@ const RoomsManager = () => {
           placeholder="Room name (e.g. Room 3)"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          className="flex-1 border border-sand-200 bg-white rounded-lg px-3 py-2 text-sm text-ink-900 placeholder:text-ink-600/50 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15"
         />
         <select
           value={newType}
           onChange={(e) => setNewType(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          className="border border-sand-200 bg-white rounded-lg px-3 py-2 text-sm text-ink-900 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15"
         >
           <option value="standard">Standard</option>
           <option value="vip">VIP</option>
@@ -79,7 +79,7 @@ const RoomsManager = () => {
         <button
           type="submit"
           disabled={saving}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50"
+          className="bg-gold-500 text-espresso-950 font-semibold px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-gold-400"
         >
           {saving ? "Adding..." : "Add Room"}
         </button>
@@ -87,10 +87,10 @@ const RoomsManager = () => {
 
       <div className="space-y-2">
         {rooms.map((room) => (
-          <div key={room._id} className="flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3">
+          <div key={room._id} className="flex items-center justify-between bg-white border border-sand-200 rounded-lg px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{room.name}</span>
-              <span className={`text-xs px-2 py-0.5 rounded ${room.type === "vip" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-600"}`}>
+              <span className="text-sm font-medium text-ink-900">{room.name}</span>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded ${room.type === "vip" ? "bg-gold-500/15 text-gold-700" : "bg-sand-100 text-ink-600"}`}>
                 {room.type === "vip" ? "VIP" : "Standard"}
               </span>
             </div>
@@ -99,24 +99,24 @@ const RoomsManager = () => {
               <button
                 onClick={() => toggleActive(room)}
                 title="Click to toggle active/disabled"
-                className={`text-xs px-3 py-1.5 rounded-md border ${
+                className={`text-xs font-medium px-3 py-1.5 rounded-md border ${
                   room.isActive
-                    ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
-                    : "bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200"
+                    ? "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200"
+                    : "bg-sand-100 text-ink-600 border-sand-200 hover:bg-sand-200"
                 }`}
               >
                 {room.isActive ? "Active — Click to Disable" : "Disabled — Click to Enable"}
               </button>
               <button
                 onClick={() => handleDelete(room)}
-                className="text-xs px-2.5 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50"
+                className="text-xs font-medium px-2.5 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50"
               >
                 Delete
               </button>
             </div>
           </div>
         ))}
-        {rooms.length === 0 && <p className="text-sm text-gray-400">No rooms yet.</p>}
+        {rooms.length === 0 && <p className="text-sm text-ink-600/50">No rooms yet.</p>}
       </div>
     </div>
   );

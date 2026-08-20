@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+/*
+  Orange International Spa — brand tokens
+  Derived from the logo: gold emblem (flame/lotus in a ring) on deep espresso.
+  Espresso  = chrome (headers, nav, primary buttons)
+  Gold      = the ONE accent — selection states, dividers, price highlights
+  Parchment = content canvas / card surfaces
+  Clay      = secondary/muted accent, borders on dark
+*/
+@theme {
+  --font-display: "Cormorant Garamond", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-espresso-950: #1c130c;
+  --color-espresso-900: #241a11;
+  --color-espresso-800: #3a2a1c;
+  --color-espresso-700: #4a3626;
+  --color-espresso-600: #5c4530;
+
+  --color-gold-300: #e3c577;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c9a227;
+  --color-gold-600: #a9821e;
+  --color-gold-700: #8a6a18;
+
+  --color-parchment-50: #fbf5e8;
+  --color-parchment-100: #f3e9d4;
+  --color-parchment-200: #e9dabb;
+
+  --color-clay-500: #a06c46;
+  --color-clay-600: #8c5a3c;
+
+  --color-ink-900: #241a12;
+  --color-ink-600: #5c4a3a;
+}
+
 @media print {
   body * {
     visibility: hidden;

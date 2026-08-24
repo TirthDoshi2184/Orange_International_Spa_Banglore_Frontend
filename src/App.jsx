@@ -23,6 +23,8 @@ import InvoiceView from "./pages/admin/InvoiceView";
 
 import CustomerLayout from "./components/customer/CustomerLayout";
 import LiveOrders from "./pages/admin/LiveOrder";
+import Memberships from "./pages/admin/Memberships";
+import MembershipDetail from "./pages/admin/MembershipDetail";
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,6 +61,8 @@ const App = () => {
 <Route path="reports" element={<Reports />} />
 <Route path="bookings/:id/invoice" element={<InvoiceView />} />
 <Route path="orders" element={<LiveOrders />} />
+<Route path="memberships" element={<Memberships />} />
+<Route path="memberships/:id" element={<MembershipDetail />} />
         </Route>
       </Routes>
     </div>

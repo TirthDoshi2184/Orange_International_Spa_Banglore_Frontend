@@ -5,6 +5,9 @@ import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
 
+import { getMembershipByCustomer } from "../../api/membership.api";
+
+
 const statusColor = {
   waiting: "bg-sand-100 text-ink-600",
   "in-service": "bg-gold-500/15 text-gold-700",
@@ -24,7 +27,10 @@ const CustomerProfile = () => {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [id]);
-
+  const [membership, setMembership] = useState(null);
+  useEffect(() => {
+    if (id) getMembershipByCustomer(id).then(setMembership).catch(() => setMembership(null));
+  }, [id]);
   if (loading) return <Loader label="Loading profile..." />;
   if (error) return <ErrorMessage message={error} />;
   if (!data) return null;
@@ -34,7 +40,15 @@ const CustomerProfile = () => {
   return (
     <div className="px-7 py-7 max-w-3xl bg-sand-50 min-h-screen font-sans">
       <Link to="/admin/customers" className="text-xs text-ink-600 hover:text-ink-900 mb-4 inline-block">← Back to Customers</Link>
-
+{membership && (
+  <Link to={`/admin/memberships/${membership._id}`}
+    className="block bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-4 hover:border-emerald-400">
+    <div className="flex justify-between text-sm">
+      <span className="font-medium text-emerald-800">{membership.tier} Member · {membership.membershipId}</span>
+      <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+    </div>
+  </Link>
+)}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display font-semibold text-2xl text-ink-900">{customer.name}</h1>

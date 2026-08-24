@@ -14,6 +14,7 @@ const navItems = [
   { to: "/admin/rooms", label: "Rooms", icon: "door" },
   { to: "/admin/reception", label: "Reception Checkout", icon: "desk" },
   { to: "/admin/customers", label: "Customers", icon: "users" },
+  { to: "/admin/memberships", label: "Memberships", icon: "wallet" },
   { to: "/admin/coupons", label: "Coupons", icon: "tag" },
   { to: "/admin/reports", label: "Reports", icon: "chart" },
 ];
@@ -30,6 +31,7 @@ const icons = {
   users: "M9 12a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16.5 8.5a3 3 0 110-6M18 14c2 .3 3 1.8 3 5",
   tag: "M12 3h6a2 2 0 012 2v6l-9.5 9.5a2 2 0 01-2.8 0L3 16.3a2 2 0 010-2.8L12 3zM15.5 8.5h.01",
   chart: "M4 20V10M11 20V4M18 20v-7",
+  wallet: "M3 7a2 2 0 012-2h13a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM16 12h3M16 12a1.5 1.5 0 010-3h3v3",
 };
 
 const NavIcon = ({ name }) => (

@@ -13,6 +13,8 @@ import { groupByCategory, MENU_CATEGORY_LABELS_KN } from "../../utils/menuCatego
 import { launchAddonCheckout } from "../../utils/razorpayCheckout";
 import logoMark from "../../assets/logo-mark.png";
 
+import { getRoomMembership, confirmAddonWithMembership } from "../../api/bookings.api";
+
 // Services don't have a fixed category list like the menu does (admin can add
 // any category), so group dynamically by whatever's actually present, in the
 // order categories first appear in the data.
@@ -56,6 +58,9 @@ const AddOnOrder = () => {
   const [currentZone, setCurrentZone] = useState(null); // "services" | "menu" | null
   const [ctaVisible, setCtaVisible] = useState(false);
 
+  const [membership, setMembership] = useState(null);
+const [payMethod, setPayMethod] = useState("razorpay"); // "razorpay" | "membership_credit"
+
   const servicesTopRef = useRef(null);
   const menuTopRef = useRef(null);
   const ctaRef = useRef(null);
@@ -69,12 +74,13 @@ const AddOnOrder = () => {
     menuSectionRefs.current[category]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  useEffect(() => {
-    Promise.all([findBookingByRoom(roomId), getServices(), getMocktails()])
-      .then(([b, s, m]) => {
+useEffect(() => {
+    Promise.all([findBookingByRoom(roomId), getServices(), getMocktails(), getRoomMembership(roomId)])
+      .then(([b, s, m, mem]) => {
         setBooking(b);
         setServices(s);
         setMocktails(m);
+        setMembership(mem);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -142,19 +148,38 @@ const AddOnOrder = () => {
 
   const handleAddAndPay = async () => {
     if (selectedServices.length === 0 && selectedMocktails.length === 0) return;
+
+    if (payMethod === "membership_credit" && (!membership || membership.balance < selectionTotal)) {
+      setAddError(
+        membership
+          ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${selectionTotal}, Shortfall: ₹${selectionTotal - membership.balance}`
+          : "No membership found for this booking."
+      );
+      return;
+    }
+
     setProcessing(true);
     setAddError("");
     try {
-      const updated = await launchAddonCheckout({
-        bookingId: booking._id,
+      const payload = {
         services: selectedServices.map(({ serviceId, durationId }) => ({ serviceId, durationId })),
         mocktails: selectedMocktails.map(({ mocktailId }) => ({ mocktailId, qty: 1 })),
-        customerName: booking.customerId?.name,
-        customerMobile: booking.customerId?.mobileNumber,
-      });
+      };
+      const updated =
+        payMethod === "membership_credit"
+          ? await confirmAddonWithMembership(booking._id, payload)
+          : await launchAddonCheckout({
+              bookingId: booking._id,
+              ...payload,
+              customerName: booking.customerId?.name,
+              customerMobile: booking.customerId?.mobileNumber,
+            });
       setBooking(updated);
       setSelectedServices([]);
       setSelectedMocktails([]);
+      if (payMethod === "membership_credit") {
+        getRoomMembership(roomId).then(setMembership).catch(() => {});
+      }
     } catch (err) {
       setAddError(err.message);
     } finally {
@@ -439,6 +464,32 @@ const AddOnOrder = () => {
 
       {/* Add & pay — the "I've reviewed everything" moment at the end of the page */}
       <div ref={ctaRef} className="px-5 pt-4 pb-8">
+        {membership && (
+          <div className="mb-3">
+            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 text-sm mb-2">
+              <span className="text-emerald-800">{membership.tier} Membership Balance</span>
+              <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPayMethod("razorpay")}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold border ${
+                  payMethod === "razorpay" ? "bg-espresso-950 text-gold-300 border-espresso-950" : "border-parchment-200 text-ink-900"
+                }`}
+              >
+                Pay Online
+              </button>
+              <button
+                onClick={() => setPayMethod("membership_credit")}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold border ${
+                  payMethod === "membership_credit" ? "bg-espresso-950 text-gold-300 border-espresso-950" : "border-parchment-200 text-ink-900"
+                }`}
+              >
+                Use Membership
+              </button>
+            </div>
+          </div>
+        )}
         <button
           onClick={handleAddAndPay}
           disabled={(selectedServices.length === 0 && selectedMocktails.length === 0) || processing}

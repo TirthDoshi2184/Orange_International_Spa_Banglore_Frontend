@@ -73,3 +73,6 @@ export const updateAddonOrderStatus = (id, status) =>
 
 export const triggerDayEndCleanup = () =>
   api.post("/admin/day-end-cleanup").then((res) => res.data.data);
+
+export const getMembershipReport = () =>
+  api.get("/admin/reports/membership-overview").then((res) => res.data.data);

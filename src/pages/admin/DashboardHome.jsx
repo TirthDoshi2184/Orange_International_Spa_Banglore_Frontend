@@ -6,7 +6,7 @@ import PriceTag from "../../components/shared/PriceTag";
 
 const statIcons = {
   bookings: "M8 2v4M16 2v4M3.5 9h17M4 5h16a1 1 0 011 1v13a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z",
-  revenue: "M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6",
+  revenue: "M6 4h12M6 8h12M9 4c3 0 5 2 5 5s-2 5-5 5h-3l7 6",
   users: "M9 12a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM3 20c0-3.5 2.7-6 6-6s6 2.5 6 6",
   clock: "M12 8v4l3 2M20 12a8 8 0 11-16 0 8 8 0 0116 0z",
   hourglass: "M6 2h12M6 22h12M6 2c0 5 6 6 6 8s-6 3-6 8M18 2c0 5-6 6-6 8s6 3 6 8",

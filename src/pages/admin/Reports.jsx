@@ -97,11 +97,11 @@ const Reports = () => {
       {/* Quick-read summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard
-          label={`Revenue (${days}d)`}
-          value={<PriceTag amount={totalRevenue} />}
-          icon="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"
-          tone="green"
-        />
+  label={`Revenue (${days}d)`}
+  value={<PriceTag amount={totalRevenue} />}
+  icon="M6 4h12M6 8h12M9 4c3 0 5 2 5 5s-2 5-5 5h-3l7 6"
+  tone="green"
+/>
         <StatCard
           label="Avg Daily Revenue"
           value={<PriceTag amount={avgDailyRevenue} />}

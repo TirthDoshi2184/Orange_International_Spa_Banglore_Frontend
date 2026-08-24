@@ -30,3 +30,13 @@ export const createAddonOrder = (bookingId, payload) =>
 
 export const confirmAddonPayment = (bookingId, payload) =>
   api.post(`/bookings/${bookingId}/addon-confirm`, payload).then((res) => res.data.data);
+
+// ADD:
+export const confirmPaymentWithMembership = (id, payload) =>
+  api.post(`/bookings/${id}/confirm-payment`, payload).then((res) => res.data.data);
+
+export const getRoomMembership = (roomId) =>
+  api.get(`/bookings/room/${roomId}/membership`).then((res) => res.data.data);
+
+export const confirmAddonWithMembership = (bookingId, payload) =>
+  api.post(`/bookings/${bookingId}/addon-confirm-membership`, payload).then((res) => res.data.data);

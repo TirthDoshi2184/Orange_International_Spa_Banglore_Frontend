@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { getBookingById } from "../../api/bookings.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
+import PriceTag from "../../components/shared/PriceTag";
 
 const InvoiceView = () => {
   const { id } = useParams();
@@ -97,15 +98,15 @@ const InvoiceView = () => {
           <p className="text-sm font-medium text-gray-700 mb-2">Payment Details</p>
           <table className="w-full text-sm">
             <tbody>
-              {booking.paymentHistory?.map((p, i) => (
-                <tr key={i} className="border-b border-gray-100">
-                  <td className="py-1.5 capitalize">{p.method} {p.reference ? `(${p.reference})` : ""}</td>
-                  <td className="py-1.5 text-right">₹{p.amount}</td>
-                  <td className="py-1.5 text-right text-gray-400 text-xs">
-                    {new Date(p.paidAt).toLocaleString("en-IN")}
-                  </td>
-                </tr>
-              ))}
+              {booking.paymentHistory.map((p, i) => (
+  <div key={i} className="flex justify-between text-sm">
+    <span className="capitalize">
+      {p.method === "membership_credit" ? "Membership Credit" : p.method}
+      {p.reference ? ` (${p.reference})` : ""}
+    </span>
+    <PriceTag amount={p.amount} />
+  </div>
+))}
             </tbody>
           </table>
           <div className="flex justify-between text-sm font-medium mt-2 pt-2 border-t border-gray-200">

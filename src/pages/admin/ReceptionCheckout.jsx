@@ -4,13 +4,14 @@ import { useAuth } from "../../context/AuthContext";
 import { getServices } from "../../api/services.api";
 import { getMocktails } from "../../api/mocktails.api";
 import { getAvailableSlots } from "../../api/timeslots.api";
-import { calculateCart, createBooking, confirmPayment } from "../../api/bookings.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
 import { groupByCategory } from "../../utils/menuCategories";
+import { calculateCart, createBooking, confirmPayment } from "../../api/bookings.api";
+import { updateBookingStatus } from "../../api/admin.api";
 import { launchRazorpayCheckout } from "../../utils/razorpayCheckout";
-
+import { getMembershipByCustomer, searchMemberships } from "../../api/membership.api";
 // Services don't have a fixed category list like the menu does (admin can add
 // any category), so group dynamically by whatever's actually present, in the
 // order categories first appear in the data.
@@ -94,6 +95,8 @@ const ReceptionCheckout = () => {
   const [currentZone, setCurrentZone] = useState(null); // "services" | "menu" | null
   const [ctaVisible, setCtaVisible] = useState(false);
 
+  const [membership, setMembership] = useState(null);
+
   const servicesTopRef = useRef(null);
   const menuTopRef = useRef(null);
   const ctaRef = useRef(null);
@@ -123,6 +126,19 @@ const ReceptionCheckout = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    if (booking?.customerId) {
+      const customerId = booking.customerId._id || booking.customerId;
+      getMembershipByCustomer(customerId).then(setMembership).catch(() => setMembership(null));
+      return;
+    }
+    const phone = customer.mobileNumber.trim();
+    if (phone.length >= 10) {
+      searchMemberships({ phone }).then((results) => setMembership(results[0] || null)).catch(() => setMembership(null));
+    } else {
+      setMembership(null);
+    }
+  }, [booking?.customerId, customer.mobileNumber]);
+  useEffect(() => {
     if (loading || booking) return;
     const zoneOptions = { rootMargin: "-10% 0px -80% 0px", threshold: 0 };
     const servicesObs = new IntersectionObserver(([entry]) => {
@@ -146,6 +162,12 @@ const ReceptionCheckout = () => {
       ctaObs.disconnect();
     };
   }, [loading, booking]);
+
+    useEffect(() => {
+    if (!booking && totals) {
+      setPaymentForm((p) => ({ ...p, amount: totals.grandTotal.toString() }));
+    }
+  }, [totals, booking]);
 
   const toPayload = () => ({
     services: selectedServices.map(({ serviceId, durationId }) => ({ serviceId, durationId })),
@@ -232,6 +254,24 @@ const ReceptionCheckout = () => {
   const handleCreateBooking = async () => {
     setSubmitError("");
     setSubmitting(true);
+
+    const amount = Number(paymentForm.amount);
+    if (!amount || amount <= 0) {
+      setSubmitError("Enter a valid payment amount before confirming.");
+      setSubmitting(false);
+      return;
+    }
+    if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
+      setSubmitError(
+        membership
+          ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
+          : "This customer does not have a membership."
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    let createdBooking = null;
     try {
       const payload = {
         customer: {
@@ -243,10 +283,31 @@ const ReceptionCheckout = () => {
         ...toPayload(),
         timeSlotId: timeSlot.id,
       };
-      const created = await createBooking(payload);
-      setBooking(created);
-      setPaymentForm((prev) => ({ ...prev, amount: created.grandTotal.toString() }));
+      createdBooking = await createBooking(payload);
+
+      let paid;
+      if (paymentForm.method === "razorpay") {
+        paid = await launchRazorpayCheckout({
+          bookingId: createdBooking._id,
+          amount,
+          customerName: customer.name,
+          customerMobile: customer.mobileNumber,
+        });
+      } else {
+        paid = await confirmPayment(createdBooking._id, {
+          amount,
+          method: paymentForm.method,
+          reference: paymentForm.reference.trim() || undefined,
+        });
+      }
+      setBooking(paid);
+      setPaymentForm({ amount: "", method: "cash", reference: "" });
     } catch (err) {
+      // Booking was created but payment didn't go through — cancel it immediately
+      // rather than leaving an unpaid booking sitting in the queue.
+      if (createdBooking) {
+        await updateBookingStatus(createdBooking._id, { bookingStatus: "cancelled" }).catch(() => {});
+      }
       setSubmitError(err.message);
     } finally {
       setSubmitting(false);
@@ -264,6 +325,15 @@ const ReceptionCheckout = () => {
   setPayingNow(true);
   try {
     let updated;
+   if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
+      setPaymentError(
+        membership
+          ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
+          : "This customer does not have a membership."
+      );
+      setPayingNow(false);
+      return;
+    }
     if (paymentForm.method === "razorpay") {
       updated = await launchRazorpayCheckout({
         bookingId: booking._id,
@@ -353,6 +423,12 @@ const ReceptionCheckout = () => {
                 onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
                 className={inputClass}
               />
+          {membership && (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 text-sm">
+                  <span className="text-emerald-800">{membership.tier} Membership Balance</span>
+                  <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+                </div>
+              )}
               <select
                 value={paymentForm.method}
                 onChange={(e) => setPaymentForm((p) => ({ ...p, method: e.target.value }))}
@@ -363,6 +439,7 @@ const ReceptionCheckout = () => {
                 <option value="upi">UPI</option>
                 <option value="razorpay">Razorpay</option>
                 <option value="other">Other</option>
+                {membership && <option value="membership_credit">Membership Credit</option>}
               </select>
               <input
                 type="text"
@@ -710,17 +787,57 @@ const ReceptionCheckout = () => {
         </div>
 
         {/* Create Booking — the "I've reviewed everything" moment at the end of the page */}
+         {/* Payment — collected BEFORE the booking is created, not after */}
+        <SectionHeading title="Payment" icon="clock" />
+        <div className="space-y-3 mb-4">
+          {membership && (
+            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 text-sm">
+              <span className="text-emerald-800">{membership.tier} Membership Balance</span>
+              <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="number"
+              placeholder="Amount"
+              value={paymentForm.amount}
+              onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+              className={inputClass}
+            />
+            <select
+              value={paymentForm.method}
+              onChange={(e) => setPaymentForm((p) => ({ ...p, method: e.target.value }))}
+              className={`${inputClass} bg-white`}
+            >
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="upi">UPI</option>
+              <option value="razorpay">Razorpay</option>
+              <option value="other">Other</option>
+              {membership && <option value="membership_credit">Membership Credit</option>}
+            </select>
+          </div>
+          <input
+            type="text"
+            placeholder="Reference (optional)"
+            value={paymentForm.reference}
+            onChange={(e) => setPaymentForm((p) => ({ ...p, reference: e.target.value }))}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Create Booking — the "I've reviewed everything" moment at the end of the page */}
         <div ref={ctaRef} className="pt-4 pb-8">
           <button
             onClick={handleCreateBooking}
             disabled={!canCreateBooking || submitting}
             className="w-full bg-gradient-to-br from-espresso-800 to-espresso-950 text-gold-300 font-bold text-[15px] py-4 rounded-2xl shadow-[0_10px_24px_rgba(28,19,12,0.35)] disabled:opacity-40 transition-opacity"
           >
-            {submitting
-              ? "Creating..."
+             {submitting
+              ? "Processing..."
               : selectionTotal
-              ? `Create Booking · ₹${selectionTotal}`
-              : "Create Booking"}
+              ? `Confirm & Pay · ₹${selectionTotal}`
+              : "Confirm & Pay"}
           </button>
           {!canCreateBooking && selectionCount > 0 && (
             <p className="text-xs text-ink-600/60 text-center mt-2">

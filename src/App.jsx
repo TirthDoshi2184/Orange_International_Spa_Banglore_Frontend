@@ -25,6 +25,7 @@ import CustomerLayout from "./components/customer/CustomerLayout";
 import LiveOrders from "./pages/admin/LiveOrder";
 import Memberships from "./pages/admin/Memberships";
 import MembershipDetail from "./pages/admin/MembershipDetail";
+import LiveSessions from "./pages/admin/LiveSession";
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,6 +61,7 @@ const App = () => {
 <Route path="coupons" element={<CouponsManager />} />
 <Route path="reports" element={<Reports />} />
 <Route path="bookings/:id/invoice" element={<InvoiceView />} />
+<Route path="live-sessions" element={<LiveSessions />} />
 <Route path="orders" element={<LiveOrders />} />
 <Route path="memberships" element={<Memberships />} />
 <Route path="memberships/:id" element={<MembershipDetail />} />

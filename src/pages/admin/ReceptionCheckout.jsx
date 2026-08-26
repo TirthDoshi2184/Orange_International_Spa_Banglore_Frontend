@@ -75,6 +75,7 @@ const ReceptionCheckout = () => {
   const [timeSlot, setTimeSlot] = useState({ id: null, label: null });
   const [customer, setCustomer] = useState({ name: "", mobileNumber: "", email: "", gender: "" });
   const [couponCode, setCouponCode] = useState("");
+const [discountPercent, setDiscountPercent] = useState("");
 
   const [serviceSearch, setServiceSearch] = useState("");
   const [menuSearch, setMenuSearch] = useState("");
@@ -96,6 +97,8 @@ const ReceptionCheckout = () => {
   const [ctaVisible, setCtaVisible] = useState(false);
 
   const [membership, setMembership] = useState(null);
+
+  
 
   const servicesTopRef = useRef(null);
   const menuTopRef = useRef(null);
@@ -170,10 +173,11 @@ const ReceptionCheckout = () => {
   }, [totals, booking]);
 
   const toPayload = () => ({
-    services: selectedServices.map(({ serviceId, durationId }) => ({ serviceId, durationId })),
-    mocktails: selectedMocktails.map(({ mocktailId, qty }) => ({ mocktailId, qty })),
-    ...(couponCode ? { couponCode } : {}),
-  });
+  services: selectedServices.map(({ serviceId, durationId }) => ({ serviceId, durationId })),
+  mocktails: selectedMocktails.map(({ mocktailId, qty }) => ({ mocktailId, qty })),
+  ...(couponCode ? { couponCode } : {}),
+  ...(discountPercent && Number(discountPercent) > 0 ? { manualDiscountPercent: Number(discountPercent) } : {}),
+});
 
   const runCalculation = useCallback(() => {
     if (selectedServices.length === 0 && selectedMocktails.length === 0) {
@@ -187,7 +191,8 @@ const ReceptionCheckout = () => {
         setCalcError(err.message);
         setTotals(null);
       });
-  }, [selectedServices, selectedMocktails, couponCode]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedServices, selectedMocktails, couponCode, discountPercent]); // eslint-disable-line react-hooks/exhaustive-deps
+    //  // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const debounce = setTimeout(runCalculation, 350);
@@ -356,13 +361,14 @@ const ReceptionCheckout = () => {
     setPayingNow(false);
   }
 };
-  const startNewBooking = () => {
+   const startNewBooking = () => {
     setBooking(null);
     setSelectedServices([]);
     setSelectedMocktails([]);
     setTimeSlot({ id: null, label: null });
     setCustomer({ name: "", mobileNumber: "", email: "", gender: "" });
     setCouponCode("");
+    setDiscountPercent("");
     setTotals(null);
     setServiceSearch("");
     setMenuSearch("");
@@ -775,13 +781,30 @@ const ReceptionCheckout = () => {
               <option value="other">Other</option>
             </select>
           </Field>
-          <div className="col-span-2">
+                    <div className="col-span-2">
             <Field label="Coupon Code (optional)">
               <input
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 className={inputClass}
               />
+            </Field>
+          </div>
+          <div className="col-span-2">
+            <Field label="Discount % (optional, reception only)">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="e.g. 10"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+                disabled={!!couponCode}
+                className={inputClass}
+              />
+              {couponCode && (
+                <p className="text-[11px] text-ink-600/60 mt-1">Remove the coupon code to apply a manual discount instead.</p>
+              )}
             </Field>
           </div>
         </div>

@@ -6,6 +6,7 @@ import {
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
+import { downloadMembershipVisitLog } from "../../utils/membershipVisitLog";
 
 const inputClass =
   "w-full border border-sand-200 bg-white rounded-xl px-4 py-2.5 text-sm text-ink-900 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/15";
@@ -123,11 +124,13 @@ const MembershipDetail = () => {
 
       <ErrorMessage message={error} />
 
-      <div className="flex gap-2 mb-6">
+            <div className="flex gap-2 mb-6">
         <button onClick={() => { setRechargeOpen((v) => !v); setAdjustOpen(false); }}
           className="flex-1 bg-gold-500 text-espresso-950 font-semibold py-2.5 rounded-lg">Recharge</button>
         <button onClick={() => { setAdjustOpen((v) => !v); setRechargeOpen(false); }}
           className="flex-1 border border-sand-200 bg-white text-ink-900 py-2.5 rounded-lg">Manual Adjustment</button>
+        <button onClick={() => downloadMembershipVisitLog(membership,transactions)}
+          className="flex-1 border border-sand-200 bg-white text-ink-900 py-2.5 rounded-lg">Download Visit Log</button>
       </div>
 
       {rechargeOpen && (

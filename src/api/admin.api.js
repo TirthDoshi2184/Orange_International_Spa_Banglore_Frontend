@@ -17,9 +17,9 @@ export const deleteService = (id) => api.delete(`/admin/services/${id}`).then((r
 export const addServiceDuration = (serviceId, payload) =>
   api.post(`/admin/services/${serviceId}/durations`, payload).then((res) => res.data.data);
 export const updateServiceDuration = (durationId, payload) =>
-  api.put(`/admin/services/durations/${durationId}`, payload).then((res) => res.data.data);
+  api.put(`/admin/durations/${durationId}`, payload).then((res) => res.data.data);
 export const deleteServiceDuration = (durationId) =>
-  api.delete(`/admin/services/durations/${durationId}`).then((res) => res.data);
+  api.delete(`/admin/durations/${durationId}`).then((res) => res.data);
 
 // Mocktails
 export const getAdminMocktails = () => api.get("/admin/mocktails").then((res) => res.data.data);

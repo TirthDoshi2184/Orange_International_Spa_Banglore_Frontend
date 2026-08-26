@@ -6,17 +6,18 @@ import logoMark from "../../assets/logo-mark.png";
 
 const navItems = [
   { to: "/admin/dashboard", label: "Dashboard", icon: "grid" },
+  { to: "/admin/reception", label: "Reception Checkout", icon: "desk" },
   { to: "/admin/orders", label: "Live Orders", icon: "bell", showBadge: true },
   { to: "/admin/bookings", label: "Bookings", icon: "calendar" },
+  { to: "/admin/live-sessions", label: "Live Sessions", icon: "clock" },
+  { to: "/admin/memberships", label: "Memberships", icon: "wallet" },
+  { to: "/admin/customers", label: "Customers", icon: "users" },
+  { to: "/admin/reports", label: "Reports", icon: "chart" },
   { to: "/admin/services", label: "Services", icon: "sparkle" },
   { to: "/admin/mocktails", label: "Menu", icon: "cup" },
   { to: "/admin/timeslots", label: "Time Slots", icon: "clock" },
   { to: "/admin/rooms", label: "Rooms", icon: "door" },
-  { to: "/admin/reception", label: "Reception Checkout", icon: "desk" },
-  { to: "/admin/customers", label: "Customers", icon: "users" },
-  { to: "/admin/memberships", label: "Memberships", icon: "wallet" },
   { to: "/admin/coupons", label: "Coupons", icon: "tag" },
-  { to: "/admin/reports", label: "Reports", icon: "chart" },
 ];
 
 const icons = {

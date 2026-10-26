@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { getAdminBookings, updateBookingStatus, getRoomAvailability, reassignRoom } from "../../api/admin.api";
+import { updatePaymentMethod, getAdminBookings, updateBookingStatus, getRoomAvailability, reassignRoom } from "../../api/admin.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
 import { Link } from "react-router-dom";
+
 
 const statusColor = {
   waiting: "bg-sand-100 text-ink-600",
@@ -27,12 +28,31 @@ const BookingsTable = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [search, setSearch] = useState("");
 
+  
   // Room picker modal state
   const [checkInBookingId, setCheckInBookingId] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [modalMode, setModalMode] = useState("checkin"); // "checkin" | "reassign"
 
+  const [payBookingId, setPayBookingId] = useState(null);
+const [payError, setPayError] = useState("");
+const [savingIdx, setSavingIdx] = useState(null);
+
+const payBooking = bookings.find((b) => b._id === payBookingId); // always reads the latest data
+
+const handleMethodChange = async (bookingId, index, method) => {
+  setPayError("");
+  setSavingIdx(index);
+  try {
+    const updated = await updatePaymentMethod(bookingId, { index, method });
+    setBookings((prev) => prev.map((b) => (b._id === bookingId ? updated : b)));
+  } catch (err) {
+    setPayError(err.message);
+  } finally {
+    setSavingIdx(null);
+  }
+};
   const [dateFilter, setDateFilter] = useState("");
   const load = () => {
     setLoading(true);
@@ -121,6 +141,7 @@ const BookingsTable = () => {
     );
   });
 
+  
   const needsCheckIn = bookings.filter(
     (b) => b.paymentStatus === "paid" && b.bookingStatus === "waiting"
   );
@@ -284,6 +305,14 @@ const BookingsTable = () => {
                         Cancel
                       </button>
                     )}
+                    {b.paymentHistory?.length > 0 && (
+  <button
+    onClick={() => { setPayError(""); setPayBookingId(b._id); }}
+    className="text-xs border border-sand-200 text-ink-600 px-2.5 py-1.5 rounded-md hover:bg-sand-50"
+  >
+    Payments
+  </button>
+)}
                     <Link to={`/admin/bookings/${b._id}/invoice`} className="text-xs text-gold-600 underline underline-offset-2 hover:text-gold-700">
                       Invoice
                     </Link>
@@ -354,6 +383,63 @@ const BookingsTable = () => {
           </div>
         </div>
       )}
+
+      {payBooking && (
+  <div className="fixed inset-0 bg-espresso-950/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-5 w-[28rem] max-h-[80vh] overflow-y-auto">
+      <h3 className="font-display font-semibold text-lg text-ink-900 mb-1">Payments</h3>
+      <p className="text-xs text-ink-600 mb-4">{payBooking.bookingNumber} · {payBooking.customerId?.name}</p>
+
+      <ErrorMessage message={payError} />
+
+      <div className="space-y-2">
+        {payBooking.paymentHistory.map((p, i) => {
+          const locked = ["membership_credit", "razorpay"].includes(p.method);
+          return (
+            <div key={i} className="border border-sand-200 rounded-xl px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <PriceTag amount={p.amount} className="font-semibold text-ink-900" />
+                  <p className="text-xs text-ink-600/70">
+                    {new Date(p.paidAt).toLocaleString("en-IN")}
+                  </p>
+                </div>
+
+                {locked ? (
+                  <span className="text-xs uppercase text-ink-600 bg-sand-50 px-2.5 py-1.5 rounded-md">
+                    {p.method.replace("_", " ")} 🔒
+                  </span>
+                ) : (
+                  <select
+                    value={p.method}
+                    disabled={savingIdx === i}
+                    onChange={(e) => handleMethodChange(payBooking._id, i, e.target.value)}
+                    className="border border-sand-200 rounded-lg px-2.5 py-1.5 text-sm bg-white disabled:opacity-50"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                    <option value="other">Other</option>
+                  </select>
+                )}
+              </div>
+
+              {p.previousMethod && (
+                <p className="text-[11px] text-amber-600 mt-1.5">
+                  Changed from {p.previousMethod} · {new Date(p.editedAt).toLocaleString("en-IN")}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <button onClick={() => setPayBookingId(null)} className="w-full text-xs text-ink-600/60 py-2 mt-3 hover:text-ink-900">
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 };

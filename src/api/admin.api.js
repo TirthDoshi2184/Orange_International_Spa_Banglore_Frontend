@@ -9,6 +9,9 @@ export const getAdminBookings = (params = {}) =>
 export const updateBookingStatus = (id, payload) =>
   api.patch(`/admin/bookings/${id}/status`, payload).then((res) => res.data.data);
 
+export const updatePaymentMethod = (bookingId, payload) =>
+  api.patch(`/admin/bookings/${bookingId}/payment-method`, payload).then((res) => res.data.data);
+
 // Services
 export const getAdminServices = () => api.get("/admin/services").then((res) => res.data.data);
 export const createService = (payload) => api.post("/admin/services", payload).then((res) => res.data.data);

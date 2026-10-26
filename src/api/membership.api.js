@@ -21,6 +21,9 @@ export const getMembershipDetail = (id) =>
 export const rechargeMembership = (id, payload) =>
   api.post(`/admin/memberships/${id}/recharge`, payload).then((res) => res.data.data);
 
+export const collectDue = (id, payload) =>
+  api.post(`/admin/memberships/${id}/collect-due`, payload).then((res) => res.data.data);
+
 export const adjustMembership = (id, payload) =>
   api.post(`/admin/memberships/${id}/adjust`, payload).then((res) => res.data.data);
 

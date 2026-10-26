@@ -12,6 +12,7 @@ import { calculateCart, createBooking, confirmPayment } from "../../api/bookings
 import { updateBookingStatus } from "../../api/admin.api";
 import { launchRazorpayCheckout } from "../../utils/razorpayCheckout";
 import { getMembershipByCustomer, searchMemberships } from "../../api/membership.api";
+
 // Services don't have a fixed category list like the menu does (admin can add
 // any category), so group dynamically by whatever's actually present, in the
 // order categories first appear in the data.
@@ -57,6 +58,13 @@ const SectionHeading = ({ title, icon }) => (
   </div>
 );
 
+// Shows "₹999 Free" (struck-through original) for complimentary lines
+const FreeTag = ({ amount }) => (
+  <span className="text-xs text-emerald-600 font-medium">
+    <span className="line-through text-ink-600/40 mr-1">₹{amount}</span>Free
+  </span>
+);
+
 // Staff-operated checkout — reception picks everything on the customer's behalf.
 // Deliberately NOT using CartContext/sessionStorage: this device may also be
 // used for genuine customer self-checkout, and the two flows must never mix state.
@@ -70,12 +78,12 @@ const ReceptionCheckout = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const [selectedServices, setSelectedServices] = useState([]); // {serviceId,durationId,name,durationMinutes,price}
-  const [selectedMocktails, setSelectedMocktails] = useState([]); // {mocktailId,name,price,qty}
+  const [selectedServices, setSelectedServices] = useState([]); // {serviceId,durationId,name,durationMinutes,price,complimentary}
+  const [selectedMocktails, setSelectedMocktails] = useState([]); // {mocktailId,name,price,qty,complimentary}
   const [timeSlot, setTimeSlot] = useState({ id: null, label: null });
   const [customer, setCustomer] = useState({ name: "", mobileNumber: "", email: "", gender: "" });
   const [couponCode, setCouponCode] = useState("");
-const [discountPercent, setDiscountPercent] = useState("");
+  const [discountPercent, setDiscountPercent] = useState("");
 
   const [serviceSearch, setServiceSearch] = useState("");
   const [menuSearch, setMenuSearch] = useState("");
@@ -97,8 +105,6 @@ const [discountPercent, setDiscountPercent] = useState("");
   const [ctaVisible, setCtaVisible] = useState(false);
 
   const [membership, setMembership] = useState(null);
-
-  
 
   const servicesTopRef = useRef(null);
   const menuTopRef = useRef(null);
@@ -141,6 +147,7 @@ const [discountPercent, setDiscountPercent] = useState("");
       setMembership(null);
     }
   }, [booking?.customerId, customer.mobileNumber]);
+
   useEffect(() => {
     if (loading || booking) return;
     const zoneOptions = { rootMargin: "-10% 0px -80% 0px", threshold: 0 };
@@ -166,18 +173,26 @@ const [discountPercent, setDiscountPercent] = useState("");
     };
   }, [loading, booking]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!booking && totals) {
       setPaymentForm((p) => ({ ...p, amount: totals.grandTotal.toString() }));
     }
   }, [totals, booking]);
 
   const toPayload = () => ({
-  services: selectedServices.map(({ serviceId, durationId }) => ({ serviceId, durationId })),
-  mocktails: selectedMocktails.map(({ mocktailId, qty }) => ({ mocktailId, qty })),
-  ...(couponCode ? { couponCode } : {}),
-  ...(discountPercent && Number(discountPercent) > 0 ? { manualDiscountPercent: Number(discountPercent) } : {}),
-});
+    services: selectedServices.map(({ serviceId, durationId, complimentary }) => ({
+      serviceId,
+      durationId,
+      ...(complimentary ? { complimentary: true } : {}),
+    })),
+    mocktails: selectedMocktails.map(({ mocktailId, qty, complimentary }) => ({
+      mocktailId,
+      qty,
+      ...(complimentary ? { complimentary: true } : {}),
+    })),
+    ...(couponCode ? { couponCode } : {}),
+    ...(discountPercent && Number(discountPercent) > 0 ? { manualDiscountPercent: Number(discountPercent) } : {}),
+  });
 
   const runCalculation = useCallback(() => {
     if (selectedServices.length === 0 && selectedMocktails.length === 0) {
@@ -191,8 +206,7 @@ const [discountPercent, setDiscountPercent] = useState("");
         setCalcError(err.message);
         setTotals(null);
       });
-    }, [selectedServices, selectedMocktails, couponCode, discountPercent]); // eslint-disable-line react-hooks/exhaustive-deps
-    //  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedServices, selectedMocktails, couponCode, discountPercent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const debounce = setTimeout(runCalculation, 350);
@@ -203,6 +217,8 @@ const [discountPercent, setDiscountPercent] = useState("");
     setSelectedServices((prev) => {
       const exists = prev.some((s) => s.serviceId === service._id && s.durationId === duration._id);
       if (exists) return prev;
+      // If this service is already marked complimentary (another duration picked), keep it consistent
+      const alreadyComp = prev.some((s) => s.serviceId === service._id && s.complimentary);
       return [
         ...prev,
         {
@@ -211,6 +227,7 @@ const [discountPercent, setDiscountPercent] = useState("");
           name: service.name,
           durationMinutes: duration.durationMinutes,
           price: duration.price,
+          complimentary: alreadyComp,
         },
       ];
     });
@@ -228,13 +245,20 @@ const [discountPercent, setDiscountPercent] = useState("");
     );
   };
 
+  // Applies to every selected duration of that service
+  const toggleServiceComplimentary = (serviceId, value) => {
+    setSelectedServices((prev) =>
+      prev.map((s) => (s.serviceId === serviceId ? { ...s, complimentary: value } : s))
+    );
+  };
+
   const addMocktail = (m) => {
     setSelectedMocktails((prev) => {
       const existing = prev.find((x) => x.mocktailId === m._id);
       if (existing) {
         return prev.map((x) => (x.mocktailId === m._id ? { ...x, qty: x.qty + 1 } : x));
       }
-      return [...prev, { mocktailId: m._id, name: m.name, price: m.price, qty: 1 }];
+      return [...prev, { mocktailId: m._id, name: m.name, price: m.price, qty: 1, complimentary: false }];
     });
   };
 
@@ -243,6 +267,12 @@ const [discountPercent, setDiscountPercent] = useState("");
       qty <= 0
         ? prev.filter((m) => m.mocktailId !== mocktailId)
         : prev.map((m) => (m.mocktailId === mocktailId ? { ...m, qty } : m))
+    );
+  };
+
+  const toggleMocktailComplimentary = (mocktailId) => {
+    setSelectedMocktails((prev) =>
+      prev.map((m) => (m.mocktailId === mocktailId ? { ...m, complimentary: !m.complimentary } : m))
     );
   };
 
@@ -256,24 +286,30 @@ const [discountPercent, setDiscountPercent] = useState("");
     totals &&
     !calcError;
 
+  const isFree = totals?.grandTotal === 0;
+
   const handleCreateBooking = async () => {
     setSubmitError("");
     setSubmitting(true);
 
     const amount = Number(paymentForm.amount);
-    if (!amount || amount <= 0) {
-      setSubmitError("Enter a valid payment amount before confirming.");
-      setSubmitting(false);
-      return;
-    }
-    if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
-      setSubmitError(
-        membership
-          ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
-          : "This customer does not have a membership."
-      );
-      setSubmitting(false);
-      return;
+
+    // A fully complimentary booking has nothing to collect, so skip payment validation
+    if (!isFree) {
+      if (!amount || amount <= 0) {
+        setSubmitError("Enter a valid payment amount before confirming.");
+        setSubmitting(false);
+        return;
+      }
+      if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
+        setSubmitError(
+          membership
+            ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
+            : "This customer does not have a membership."
+        );
+        setSubmitting(false);
+        return;
+      }
     }
 
     let createdBooking = null;
@@ -291,7 +327,9 @@ const [discountPercent, setDiscountPercent] = useState("");
       createdBooking = await createBooking(payload);
 
       let paid;
-      if (paymentForm.method === "razorpay") {
+      if (isFree) {
+        paid = createdBooking; // nothing to collect
+      } else if (paymentForm.method === "razorpay") {
         paid = await launchRazorpayCheckout({
           bookingId: createdBooking._id,
           amount,
@@ -320,48 +358,49 @@ const [discountPercent, setDiscountPercent] = useState("");
   };
 
   const handleCollectPayment = async (e) => {
-  e.preventDefault();
-  setPaymentError("");
-  const amount = Number(paymentForm.amount);
-  if (!amount || amount <= 0) {
-    setPaymentError("Enter a valid amount.");
-    return;
-  }
-  setPayingNow(true);
-  try {
-    let updated;
-   if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
-      setPaymentError(
-        membership
-          ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
-          : "This customer does not have a membership."
-      );
-      setPayingNow(false);
+    e.preventDefault();
+    setPaymentError("");
+    const amount = Number(paymentForm.amount);
+    if (!amount || amount <= 0) {
+      setPaymentError("Enter a valid amount.");
       return;
     }
-    if (paymentForm.method === "razorpay") {
-      updated = await launchRazorpayCheckout({
-        bookingId: booking._id,
-        amount,
-        customerName: customer.name,
-        customerMobile: customer.mobileNumber,
-      });
-    } else {
-      updated = await confirmPayment(booking._id, {
-        amount,
-        method: paymentForm.method,
-        reference: paymentForm.reference.trim() || undefined,
-      });
+    setPayingNow(true);
+    try {
+      let updated;
+      if (paymentForm.method === "membership_credit" && (!membership || membership.balance < amount)) {
+        setPaymentError(
+          membership
+            ? `Insufficient membership balance. Available: ₹${membership.balance}, Required: ₹${amount}, Shortfall: ₹${amount - membership.balance}`
+            : "This customer does not have a membership."
+        );
+        setPayingNow(false);
+        return;
+      }
+      if (paymentForm.method === "razorpay") {
+        updated = await launchRazorpayCheckout({
+          bookingId: booking._id,
+          amount,
+          customerName: customer.name,
+          customerMobile: customer.mobileNumber,
+        });
+      } else {
+        updated = await confirmPayment(booking._id, {
+          amount,
+          method: paymentForm.method,
+          reference: paymentForm.reference.trim() || undefined,
+        });
+      }
+      setBooking(updated);
+      setPaymentForm({ amount: "", method: "cash", reference: "" });
+    } catch (err) {
+      setPaymentError(err.message);
+    } finally {
+      setPayingNow(false);
     }
-    setBooking(updated);
-    setPaymentForm({ amount: "", method: "cash", reference: "" });
-  } catch (err) {
-    setPaymentError(err.message);
-  } finally {
-    setPayingNow(false);
-  }
-};
-   const startNewBooking = () => {
+  };
+
+  const startNewBooking = () => {
     setBooking(null);
     setSelectedServices([]);
     setSelectedMocktails([]);
@@ -429,7 +468,7 @@ const [discountPercent, setDiscountPercent] = useState("");
                 onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
                 className={inputClass}
               />
-          {membership && (
+              {membership && (
                 <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 text-sm">
                   <span className="text-emerald-800">{membership.tier} Membership Balance</span>
                   <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
@@ -464,7 +503,7 @@ const [discountPercent, setDiscountPercent] = useState("");
             </form>
           ) : (
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg px-4 py-3 mb-6 text-center">
-              Fully paid.
+              {booking.grandTotal === 0 ? "Complimentary booking — nothing to pay." : "Fully paid."}
             </div>
           )}
 
@@ -520,7 +559,11 @@ const [discountPercent, setDiscountPercent] = useState("");
                     {s.name} ({s.durationMinutes} min)
                   </span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <PriceTag amount={s.price} className="text-ink-900" />
+                    {s.complimentary ? (
+                      <FreeTag amount={s.price} />
+                    ) : (
+                      <PriceTag amount={s.price} className="text-ink-900" />
+                    )}
                     <button onClick={() => removeService(s.serviceId, s.durationId)} className="text-ink-600/40 hover:text-red-600 text-xs">✕</button>
                   </div>
                 </div>
@@ -532,7 +575,20 @@ const [discountPercent, setDiscountPercent] = useState("");
                     <button onClick={() => updateMocktailQty(m.mocktailId, m.qty - 1)} className="w-5 h-5 border border-sand-200 rounded text-ink-600 text-xs leading-none hover:border-gold-500">−</button>
                     <span className="text-ink-900 text-xs w-3 text-center">{m.qty}</span>
                     <button onClick={() => updateMocktailQty(m.mocktailId, m.qty + 1)} className="w-5 h-5 border border-sand-200 rounded text-ink-600 text-xs leading-none hover:border-gold-500">+</button>
-                    <PriceTag amount={m.price * m.qty} className="text-ink-900" />
+                    <label className="flex items-center gap-1 text-[10px] text-ink-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!m.complimentary}
+                        onChange={() => toggleMocktailComplimentary(m.mocktailId)}
+                        className="accent-gold-500"
+                      />
+                      Comp
+                    </label>
+                    {m.complimentary ? (
+                      <FreeTag amount={m.price * m.qty} />
+                    ) : (
+                      <PriceTag amount={m.price * m.qty} className="text-ink-900" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -594,6 +650,9 @@ const [discountPercent, setDiscountPercent] = useState("");
                       ? Math.min(...activeDurations.map((d) => d.price))
                       : null;
 
+                    const picked = selectedServices.filter((x) => x.serviceId === s._id);
+                    const isComp = picked.length > 0 && picked.every((x) => x.complimentary);
+
                     return (
                       <div
                         key={s._id}
@@ -630,9 +689,7 @@ const [discountPercent, setDiscountPercent] = useState("");
 
                           <div className="flex flex-wrap gap-1.5">
                             {activeDurations.map((d) => {
-                              const selected = selectedServices.some(
-                                (x) => x.serviceId === s._id && x.durationId === d._id
-                              );
+                              const selected = picked.some((x) => x.durationId === d._id);
                               return (
                                 <button
                                   key={d._id}
@@ -650,12 +707,28 @@ const [discountPercent, setDiscountPercent] = useState("");
                                   )}
                                   <span className="text-[9px] text-ink-600">{d.durationMinutes}min</span>
                                   <span className={`text-[11px] font-bold ${selected ? "text-gold-600" : "text-ink-900"}`}>
-                                    ₹{d.price}
+                                    {selected && isComp ? "Free" : `₹${d.price}`}
                                   </span>
                                 </button>
                               );
                             })}
                           </div>
+
+                          {/* Complimentary toggle — enabled once a duration is picked */}
+                          <label
+                            className={`flex items-center gap-1.5 mt-2.5 text-[11px] ${
+                              picked.length ? "text-ink-900 cursor-pointer" : "text-ink-600/40"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              disabled={picked.length === 0}
+                              checked={isComp}
+                              onChange={(e) => toggleServiceComplimentary(s._id, e.target.checked)}
+                              className="accent-gold-500"
+                            />
+                            Complimentary
+                          </label>
                         </div>
                       </div>
                     );
@@ -706,7 +779,9 @@ const [discountPercent, setDiscountPercent] = useState("");
                           </span>
                         )}
                         <span className="text-[13px] font-semibold text-ink-900 leading-snug mb-1.5">{m.name}</span>
-                        <span className={`text-[13px] font-bold ${selected ? "text-gold-600" : "text-ink-900"}`}>₹{m.price}</span>
+                        <span className={`text-[13px] font-bold ${selected ? "text-gold-600" : "text-ink-900"}`}>
+                          {selected?.complimentary ? "Free" : `₹${m.price}`}
+                        </span>
                       </button>
                     );
                   })}
@@ -781,7 +856,7 @@ const [discountPercent, setDiscountPercent] = useState("");
               <option value="other">Other</option>
             </select>
           </Field>
-                    <div className="col-span-2">
+          <div className="col-span-2">
             <Field label="Coupon Code (optional)">
               <input
                 value={couponCode}
@@ -809,45 +884,50 @@ const [discountPercent, setDiscountPercent] = useState("");
           </div>
         </div>
 
-        {/* Create Booking — the "I've reviewed everything" moment at the end of the page */}
-         {/* Payment — collected BEFORE the booking is created, not after */}
+        {/* Payment — collected BEFORE the booking is created, not after */}
         <SectionHeading title="Payment" icon="clock" />
-        <div className="space-y-3 mb-4">
-          {membership && (
-            <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 text-sm">
-              <span className="text-emerald-800">{membership.tier} Membership Balance</span>
-              <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+        {isFree ? (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg px-4 py-3 mb-4 text-center">
+            Everything is complimentary — no payment needed.
+          </div>
+        ) : (
+          <div className="space-y-3 mb-4">
+            {membership && (
+              <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 text-sm">
+                <span className="text-emerald-800">{membership.tier} Membership Balance</span>
+                <span className="font-semibold text-emerald-800">₹{membership.balance.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="number"
+                placeholder="Amount"
+                value={paymentForm.amount}
+                onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+                className={inputClass}
+              />
+              <select
+                value={paymentForm.method}
+                onChange={(e) => setPaymentForm((p) => ({ ...p, method: e.target.value }))}
+                className={`${inputClass} bg-white`}
+              >
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="upi">UPI</option>
+                <option value="razorpay">Razorpay</option>
+                <option value="other">Other</option>
+                {membership && <option value="membership_credit">Membership Credit</option>}
+              </select>
             </div>
-          )}
-          <div className="grid grid-cols-2 gap-3">
             <input
-              type="number"
-              placeholder="Amount"
-              value={paymentForm.amount}
-              onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+              type="text"
+              placeholder="Reference (optional)"
+              value={paymentForm.reference}
+              onChange={(e) => setPaymentForm((p) => ({ ...p, reference: e.target.value }))}
               className={inputClass}
             />
-            <select
-              value={paymentForm.method}
-              onChange={(e) => setPaymentForm((p) => ({ ...p, method: e.target.value }))}
-              className={`${inputClass} bg-white`}
-            >
-              <option value="cash">Cash</option>
-              <option value="card">Card</option>
-              <option value="upi">UPI</option>
-              <option value="razorpay">Razorpay</option>
-              <option value="other">Other</option>
-              {membership && <option value="membership_credit">Membership Credit</option>}
-            </select>
           </div>
-          <input
-            type="text"
-            placeholder="Reference (optional)"
-            value={paymentForm.reference}
-            onChange={(e) => setPaymentForm((p) => ({ ...p, reference: e.target.value }))}
-            className={inputClass}
-          />
-        </div>
+        )}
 
         {/* Create Booking — the "I've reviewed everything" moment at the end of the page */}
         <div ref={ctaRef} className="pt-4 pb-8">
@@ -856,9 +936,11 @@ const [discountPercent, setDiscountPercent] = useState("");
             disabled={!canCreateBooking || submitting}
             className="w-full bg-gradient-to-br from-espresso-800 to-espresso-950 text-gold-300 font-bold text-[15px] py-4 rounded-2xl shadow-[0_10px_24px_rgba(28,19,12,0.35)] disabled:opacity-40 transition-opacity"
           >
-             {submitting
+            {submitting
               ? "Processing..."
-              : selectionTotal
+              : isFree
+              ? "Confirm Complimentary Booking"
+              : selectionTotal != null
               ? `Confirm & Pay · ₹${selectionTotal}`
               : "Confirm & Pay"}
           </button>
@@ -899,7 +981,11 @@ const [discountPercent, setDiscountPercent] = useState("");
               {selectionCount} item{selectionCount !== 1 ? "s" : ""} selected
             </span>
             <span className="flex items-center gap-2 font-bold text-[15px]">
-              {submitting ? "Creating..." : selectionTotal ? `Create Booking · ₹${selectionTotal}` : "Create Booking"}
+              {submitting
+                ? "Creating..."
+                : selectionTotal != null
+                ? `Create Booking · ₹${selectionTotal}`
+                : "Create Booking"}
               {!submitting && (
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14M13 6l6 6-6 6" />

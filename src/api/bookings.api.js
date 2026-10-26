@@ -40,3 +40,4 @@ export const getRoomMembership = (roomId) =>
 
 export const confirmAddonWithMembership = (bookingId, payload) =>
   api.post(`/bookings/${bookingId}/addon-confirm-membership`, payload).then((res) => res.data.data);
+

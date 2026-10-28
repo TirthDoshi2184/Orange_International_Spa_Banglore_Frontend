@@ -12,6 +12,8 @@ export const updateBookingStatus = (id, payload) =>
 export const updatePaymentMethod = (bookingId, payload) =>
   api.patch(`/admin/bookings/${bookingId}/payment-method`, payload).then((res) => res.data.data);
 
+export const deleteBooking = (bookingId, reason) =>
+  api.delete(`/admin/bookings/${bookingId}`, { data: { reason } }).then((res) => res.data.data);
 // Services
 export const getAdminServices = () => api.get("/admin/services").then((res) => res.data.data);
 export const createService = (payload) => api.post("/admin/services", payload).then((res) => res.data.data);

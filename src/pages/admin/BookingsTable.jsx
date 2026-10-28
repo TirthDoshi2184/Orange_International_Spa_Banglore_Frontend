@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { updatePaymentMethod, getAdminBookings, updateBookingStatus, getRoomAvailability, reassignRoom } from "../../api/admin.api";
+import { updatePaymentMethod, getAdminBookings, updateBookingStatus, getRoomAvailability, reassignRoom, deleteBooking } from "../../api/admin.api";
 import Loader from "../../components/shared/Loader";
 import ErrorMessage from "../../components/shared/ErrorMessage";
 import PriceTag from "../../components/shared/PriceTag";
@@ -34,6 +34,27 @@ const BookingsTable = () => {
   const [availability, setAvailability] = useState([]);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [modalMode, setModalMode] = useState("checkin"); // "checkin" | "reassign"
+
+const [deleteTarget, setDeleteTarget] = useState(null); // the booking being deleted
+const [deleteReason, setDeleteReason] = useState("");
+const [deleting, setDeleting] = useState(false);
+const [deleteError, setDeleteError] = useState("");
+
+const openDelete = (b) => { setDeleteTarget(b); setDeleteReason(""); setDeleteError(""); };
+
+const handleDelete = async () => {
+  setDeleteError("");
+  setDeleting(true);
+  try {
+    await deleteBooking(deleteTarget._id, deleteReason.trim());
+    setBookings((prev) => prev.filter((b) => b._id !== deleteTarget._id));
+    setDeleteTarget(null);
+  } catch (err) {
+    setDeleteError(err.message);
+  } finally {
+    setDeleting(false);
+  }
+};
 
   const [payBookingId, setPayBookingId] = useState(null);
 const [payError, setPayError] = useState("");
@@ -316,6 +337,12 @@ const handleMethodChange = async (bookingId, index, method) => {
                     <Link to={`/admin/bookings/${b._id}/invoice`} className="text-xs text-gold-600 underline underline-offset-2 hover:text-gold-700">
                       Invoice
                     </Link>
+                    <button
+  onClick={() => openDelete(b)}
+  className="text-xs text-red-600 hover:underline"
+>
+  Delete
+</button>
                   </td>
                 </tr>
               );
@@ -438,7 +465,67 @@ const handleMethodChange = async (bookingId, index, method) => {
         Close
       </button>
     </div>
-  </div>
+  {deleteTarget && (() => {
+  const paidTotal = deleteTarget.paymentHistory?.reduce((s, p) => s + p.amount, 0) || 0;
+  const membershipPaid = deleteTarget.paymentHistory
+    ?.filter((p) => p.method === "membership_credit")
+    .reduce((s, p) => s + p.amount, 0) || 0;
+  const manualPaid = paidTotal - membershipPaid; // cash / card / upi / razorpay / other
+
+  return (
+    <div className="fixed inset-0 bg-espresso-950/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-5 w-[26rem] max-h-[85vh] overflow-y-auto">
+        <h3 className="font-display font-semibold text-lg text-ink-900 mb-1">Delete booking?</h3>
+        <p className="text-xs text-ink-600 mb-4">
+          {deleteTarget.bookingNumber} · {deleteTarget.customerId?.name}
+        </p>
+
+        <div className="text-xs text-ink-600 bg-sand-50 rounded-xl px-3.5 py-3 mb-3 space-y-1.5">
+          <p>• The booking is removed from this list and the room is freed.</p>
+          {membershipPaid > 0 && (
+            <p className="text-emerald-700">
+              • ₹{membershipPaid.toLocaleString("en-IN")} of membership credit will be returned to the customer.
+            </p>
+          )}
+          {manualPaid > 0 && (
+            <p className="text-amber-700 font-medium">
+              • ₹{manualPaid.toLocaleString("en-IN")} was paid by cash/card/UPI/Razorpay. Refund this manually. It is not returned automatically.
+            </p>
+          )}
+          {deleteTarget.bookingStatus === "completed" && (
+            <p className="text-red-600 font-medium">• This booking is already completed.</p>
+          )}
+        </div>
+
+        <ErrorMessage message={deleteError} />
+        <textarea
+          value={deleteReason}
+          onChange={(e) => setDeleteReason(e.target.value)}
+          placeholder="Reason (required) — e.g. wrong entry, customer declined"
+          rows={2}
+          className="w-full border border-sand-200 rounded-xl px-3.5 py-2.5 text-sm mb-3 focus:outline-none focus:border-gold-500"
+        />
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setDeleteTarget(null)}
+            className="flex-1 border border-sand-200 text-ink-900 py-2.5 rounded-lg text-sm"
+          >
+            Keep booking
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={deleting || deleteReason.trim().length < 3}
+            className="flex-1 bg-red-600 text-white font-semibold py-2.5 rounded-lg text-sm disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})()}
+  </div>  
 )}
     </div>
   );
